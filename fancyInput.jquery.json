@@ -1,0 +1,30 @@
+{
+	"name": "fancy input",
+	"title": "fancy input",
+	"description": "Makes typing in input fields fun with CSS3 effects",
+	"keywords": ["input", "effects", "css3", "animation", "form"],
+	"version": "1.0.0",
+	"author": {
+		"name": "Yair Even Or",
+		"url": "http://dropthebit.com"
+	},
+	"maintainers": [
+	{
+		"name": "Yair Even Or",
+		"email": "vsync.design@gmail.com"
+	}
+	],
+	"licenses": [
+	{
+		"type": "MIT",
+		"url": "http://opensource.org/licenses/MIT"
+	}
+	],
+	"bugs": "https://github.com/yairEO/fancyInput/issues",
+	"homepage": "https://github.com/yairEO/fancyInput",
+	"docs": "https://github.com/yairEO/fancyInput",
+	"download": "https://github.com/yairEO/fancyInput",
+	"dependencies": {
+		"jquery": ">=1.5"
+	}
+}
