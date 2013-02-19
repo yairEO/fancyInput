@@ -7,9 +7,11 @@
 
 (function($){
 	"use strict";
-	
+	var isIe = !!window.ActiveXObject;
+
 	$.fn.fancyInput = function(){
-		init( this );
+		if( !isIe )
+			init( this );
 		return this;
 	}
 	
@@ -212,7 +214,7 @@
 
 		inputs.each(function(){
 			// add need DOM for the plugin to work
-			$(this).after('<div></div>', '<b class="caret"></b>');
+			$(this).after('<div></div>', '<b class="caret"></b>').parent().addClass('fancyInput');
 			// populate the fake field if there was any text in the real input
 			fancyInput.fillText(this.value, this);
 		});
