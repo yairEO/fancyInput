@@ -1,9 +1,9 @@
 {
-	"name": "fancy input",
+	"name": "fancyInput",
 	"title": "fancy input",
 	"description": "Makes typing in input fields fun with CSS3 effects",
 	"keywords": ["input", "effects", "css3", "animation", "form"],
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"author": {
 		"name": "Yair Even Or",
 		"url": "http://dropthebit.com"
