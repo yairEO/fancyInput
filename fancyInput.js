@@ -5,9 +5,10 @@
 	MIT-style license.
 */
 
-(function($){
+;(function($){
 	"use strict";
-	var isIe = !!window.ActiveXObject;
+	var isIe = !!window.ActiveXObject,
+		letterHeight;
 
 	$.fn.fancyInput = function(){
 		if( !isIe )
@@ -21,7 +22,8 @@
 		keypress : function(e){
 			var charString = String.fromCharCode(e.charCode),
 				textCont = this.nextElementSibling,
-				appendIndex = this.selectionEnd;
+				appendIndex = this.selectionEnd,
+				newLine = this.tagName == 'TEXTAREA' && e.keyCode == 13;
 				
 			if( (this.selectionEnd - this.selectionStart) > 0 && e.charCode && !e.ctrlKey ){
 				var rangeToDel = [this.selectionStart, this.selectionEnd];
@@ -35,44 +37,66 @@
 				fancyInput.removeChars(textCont, rangeToDel);
 			}
 
-			if( e.charCode && !e.ctrlKey ){
+			if( e.charCode && !e.ctrlKey || newLine ){
 				var dir = charDir.check(charString); // BIDI support
 				if( dir == 'rtl' || (dir == '' && charDir.lastDir == 'rtl' ) )
 					appendIndex = this.value.length - this.selectionStart;
+					
+				if( newLine )
+					charString = '';
+
 				fancyInput.writer(charString, this, appendIndex);
 			}
+			
+			//fancyInput.inputResize(this);
+		},
+		
+		// Clalculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
+		setCaretHeight : function(input){
+			var lettersWrap = $(input.nextElementSibling);
+			if( !lettersWrap.find('span').length )
+				return false;
+			letterHeight = lettersWrap.find('span')[0].clientHeight;
+			lettersWrap.find('b').height(letterHeight);
 		},
 
 		writer : function(charString, input, appendIndex){
-			var s = charString,
-				chars = $(input.nextElementSibling).find('span');
-
-			if( s == ' ' ) // space
-				s = '&nbsp;';
-
-			var newCharElm = document.createElement('span');
-			newCharElm.innerHTML = s;
-			this.classToggler = this.classToggler == 'state2' ? 'state1' : 'state2';
-			newCharElm.className = this.classToggler;
+			var chars = $(input.nextElementSibling).children().not('b'),  // select all characters including <br> (which is a new line)
+				newCharElm = document.createElement('span');
+			
+			if( charString == ' ' ) // space
+				charString = '&nbsp;';
+			
+			if( charString ){
+				newCharElm.innerHTML = charString;
+				this.classToggler = this.classToggler == 'state2' ? 'state1' : 'state2';
+				newCharElm.className = this.classToggler;
+			}
+			else
+				newCharElm = document.createElement('br');
 			
 			if( chars.length ){
 				if( appendIndex == 0 ) 
 					$(input.nextElementSibling).prepend(newCharElm);
-				else
-					chars.eq(--appendIndex).after(newCharElm);
+				else{
+					var appendPos = chars.eq(--appendIndex);
+					appendPos.after(newCharElm);
+				}
 			}
 			else
 				input.nextElementSibling.appendChild(newCharElm);
 
-			setTimeout(function(){
-				newCharElm.removeAttribute("class");
-			},20);
+			// let the render tree settle down with the new class, then remove it
+			if( charString)
+				setTimeout(function(){
+					newCharElm.removeAttribute("class");
+				},20);
+				
 		},
 
 		clear : function(textCont){
-			var caret = $(textCont.parentNode).find('.caret')[0];
-			textCont.parentNode.appendChild( caret );
-			textCont.innerHTML = '';
+			var caret = $(textCont.parentNode).find('.caret');
+			$(textCont).html(caret);
 		},
 		
 		fillText : function(text, input){
@@ -81,12 +105,16 @@
 				frag = document.createDocumentFragment();
 
 			fancyInput.clear( input.nextElementSibling );
-
+			
 			setTimeout( function(){
 				var length = text.length;
+					
 				for( var i=0; i < length; i++ ){
+					var newElm = 'span';
 					//fancyInput.writer( text[i], input, i);
-					newCharElm = document.createElement('span');
+					if( text[i] == '\n' )
+						newElm = 'br';
+					newCharElm = document.createElement(newElm);
 					newCharElm.innerHTML = (text[i] == ' ') ? '&nbsp;' : text[i];
 					frag.appendChild(newCharElm);
 				}
@@ -95,10 +123,47 @@
 		},
 		
 		removeChars : function(el, range){
-			var chars = $(el).find('span');
+			var chars = $(el).children().not('b');
 			if( range[0] == range[1] )
 				range[0]--;
 			chars.slice(range[0], range[1]).remove();
+		},
+		
+		// recalculate textarea height or input width
+		inputResize : function(el){
+			if( el.tagName == 'TEXTAREA' ){
+				el.style.top = '-999px';
+				var newHeight = el.parentNode.scrollHeight;
+				
+				if( $(el).outerHeight() < el.parentNode.scrollHeight )
+					newHeight += 10;
+				
+				el.style.height = newHeight + 'px';
+				el.style.top = '0';
+				
+				// must re-adjust scrollTop after pasting long text
+				setTimeout(function(){
+					el.scrollTop = 0;
+					el.parentNode.scrollTop = 9999;
+				},50);
+			}
+			if( el.tagName == 'INPUT' && el.type == 'text' ){
+				el.style.width = 0;
+				var newWidth = el.parentNode.scrollWidth,
+					offset;
+				// if there is a scroll (or should be) adjust with some extra width
+				if( el.parentNode.scrollWidth > el.parentNode.clientWidth ){
+					newWidth += 50;
+					offset = 10;
+				}
+				else
+					offset = 0;
+				
+				el.style.width = newWidth + 'px';
+				// re-adjustment
+				//el.scrollLeft = 9999;
+				el.parentNode.scrollLeft += offset;
+			}
 		},
 		
 		keydown : function(e){
@@ -106,14 +171,16 @@
 				textCont = this.nextElementSibling,
 				appendIndex = this.selectionEnd,
 				undo = e.ctrlKey && e.keyCode == 90,
+				redo = e.ctrlKey && e.keyCode == 89,
 				selectAll = e.ctrlKey && e.keyCode == 65;
 				
-			fancyInput.setCarrot(this);
+			fancyInput.textLength = this.textLength; // save a referece to later check if text was added in the "allEvents" callback
+			fancyInput.setCaret(this);
 
 			if( selectAll )
 				return true;
 
-			if( undo ){
+			if( undo || redo ){
 				// give the undo time actually remove the text from the DOM
 				setTimeout( function(){
 					fancyInput.fillText(e.target.value, e.target);
@@ -121,8 +188,8 @@
 				return true;
 			}
 			// if a key was pressed while ALL the text was selected..delete everything
-			if( (this.selectionEnd - this.selectionStart) == this.value.length && this.value.length )
-				fancyInput.clear(textCont);
+			//if( (this.selectionEnd - this.selectionStart) == this.value.length && this.value.length )
+			//	fancyInput.clear(textCont);
 				
 			if( e.keyCode == 8 ){
 				var rangeToDel = [this.selectionStart, this.selectionEnd];
@@ -132,12 +199,12 @@
 
 				fancyInput.removeChars(textCont, rangeToDel);
 			}
-
+			
 			return true;
 		},
 		
 		allEvents : function(e){
-			fancyInput.setCarrot(this);
+			fancyInput.setCaret(this);
 
 			if( e.type == 'paste' ){
 				setTimeout(function(){
@@ -149,21 +216,31 @@
 			}
 			
 			if( e.type == 'select' ){
-				console.log(1);
+			}
+			
+			// must wait until the rendering is finished
+			setTimeout(function(){
+				if( fancyInput.textLength != e.target.textLength ) // only resize if text was changed
+					fancyInput.inputResize(e.target);
+			},120);
+			
+			if( !letterHeight ){
+				// in case text was pasted, wait for it to actually render
+				setTimeout(function(){ fancyInput.setCaretHeight(e.target) }, 150);
 			}
 		},
 		
-		setCarrot : function(input){
+		setCaret : function(input){
 			var caret = $(input.parentNode).find('.caret'),
 				pos = fancyInput.getCaretPosition(input);
-				
+
 				if( charDir.lastDir == 'rtl' ) // BIDI support
 					pos = input.value.length - pos;
 
-			var	insertPos = $(input.nextElementSibling).find('span').eq(pos);
-				
+			var	insertPos = $(input.nextElementSibling).children().not('b').eq(pos);
+
 			if(pos == input.value.length )
-				caret.insertAfter(input.nextElementSibling);
+				caret.appendTo(input.nextElementSibling);
 			else
 				caret.insertBefore( insertPos );
 		},
@@ -213,13 +290,21 @@
 		var selector = inputs.selector;
 
 		inputs.each(function(){
+			var className = 'fancyInput',
+				template = $('<div><b class="caret">&#8203;</b></div>');
+				
+			if( this.tagName == 'TEXTAREA' )
+				className += ' textarea';
 			// add need DOM for the plugin to work
-			$(this).after('<div></div>', '<b class="caret"></b>').parent().addClass('fancyInput');
+			$(this.parentNode).append(template).addClass(className);
+	
 			// populate the fake field if there was any text in the real input
-			fancyInput.fillText(this.value, this);
+			if( this.value )
+				fancyInput.fillText(this.value, this);
 		});
 		
 		// bind all the events to simulate an input type text (yes, alot)
+		
 		$(document)
 			.on('keypress.fi', selector, fancyInput.keypress)
 			.on('keyup.fi select.fi mouseup.fi cut.fi paste.fi',selector, fancyInput.allEvents)
@@ -229,4 +314,4 @@
 	}
 
 	window.fancyInput = fancyInput;
-})(jQuery);
+})(window.jQuery);
