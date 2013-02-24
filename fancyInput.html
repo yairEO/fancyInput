@@ -61,8 +61,8 @@
 
 		// Everything below is only for the DEMO
 		function init(str){
-			var input = $('input').val('')[0],
-				s = 'typeé something... ✌'.split('').reverse(),
+			var input = $('section :input').val('')[0],
+				s = 'type something... ✌'.split('').reverse(),
 				len = s.length-1;
 			
 			var	initInterval = setInterval(function(){
@@ -75,7 +75,7 @@
 			},150);
 		}
 		
-		//init();
+		init();
 		
 		$('menu').on('click', 'button', toggleEffect);
 		$('menu.radio').on('change', 'input', changeForm).find('input:first').prop('checked',true).trigger('change');

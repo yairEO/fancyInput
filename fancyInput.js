@@ -149,20 +149,15 @@
 			}
 			if( el.tagName == 'INPUT' && el.type == 'text' ){
 				el.style.width = 0;
-				var newWidth = el.parentNode.scrollWidth,
-					offset;
+				var newWidth = el.parentNode.scrollWidth
 				// if there is a scroll (or should be) adjust with some extra width
-				if( el.parentNode.scrollWidth > el.parentNode.clientWidth ){
-					newWidth += 50;
-					offset = 10;
-				}
-				else
-					offset = 0;
+				if( el.parentNode.scrollWidth > el.parentNode.clientWidth )
+					newWidth += 10;
 				
 				el.style.width = newWidth + 'px';
 				// re-adjustment
 				//el.scrollLeft = 9999;
-				el.parentNode.scrollLeft += offset;
+				//el.parentNode.scrollLeft += offset;
 			}
 		},
 		
@@ -174,7 +169,7 @@
 				redo = e.ctrlKey && e.keyCode == 89,
 				selectAll = e.ctrlKey && e.keyCode == 65;
 				
-			fancyInput.textLength = this.textLength; // save a referece to later check if text was added in the "allEvents" callback
+			fancyInput.textLength = this.value.length; // save a referece to later check if text was added in the "allEvents" callback
 			fancyInput.setCaret(this);
 
 			if( selectAll )
@@ -187,9 +182,6 @@
 				}, 50);
 				return true;
 			}
-			// if a key was pressed while ALL the text was selected..delete everything
-			//if( (this.selectionEnd - this.selectionStart) == this.value.length && this.value.length )
-			//	fancyInput.clear(textCont);
 				
 			if( e.keyCode == 8 ){
 				var rangeToDel = [this.selectionStart, this.selectionEnd];
@@ -220,10 +212,15 @@
 			
 			// must wait until the rendering is finished
 			setTimeout(function(){
-				if( fancyInput.textLength != e.target.textLength ) // only resize if text was changed
+				if( fancyInput.textLength != e.target.value.length ) // only resize if text was changed
 					fancyInput.inputResize(e.target);
 			},120);
 			
+			// make sure to reset the container scrollLeft
+			if( this.selectionStart == 0 )
+				this.parentNode.scrollLeft = 0;
+			
+			// The caret height should be set. only once after the first character was entered.
 			if( !letterHeight ){
 				// in case text was pasted, wait for it to actually render
 				setTimeout(function(){ fancyInput.setCaretHeight(e.target) }, 150);
