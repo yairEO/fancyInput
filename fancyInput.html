@@ -61,15 +61,19 @@
 
 		// Everything below is only for the DEMO
 		function init(str){
-			var input = $('section :input').val('')[0],
+			var input = $('section input').val('')[0],
 				s = 'type something... ✌'.split('').reverse(),
-				len = s.length-1;
+				len = s.length-1,
+				e = $.Event('keypress');
 			
 			var	initInterval = setInterval(function(){
 					if( s.length ){
 						var c = s.pop();
-						fancyInput.writer(c, input, len-s.length);
+						fancyInput.writer(c, input, len-s.length).setCaret(input);
 						input.value += c;
+						//e.charCode = c.charCodeAt(0);
+						//input.trigger(e);
+						
 					}
 					else clearInterval(initInterval);
 			},150);

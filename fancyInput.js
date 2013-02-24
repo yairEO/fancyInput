@@ -48,7 +48,6 @@
 				fancyInput.writer(charString, this, appendIndex);
 			}
 			
-			//fancyInput.inputResize(this);
 		},
 		
 		// Clalculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
@@ -91,7 +90,8 @@
 				setTimeout(function(){
 					newCharElm.removeAttribute("class");
 				},20);
-				
+			
+			return this;
 		},
 
 		clear : function(textCont){
@@ -122,11 +122,28 @@
 			},0);
 		},
 		
+		// Handles characters removal from the fake text input
 		removeChars : function(el, range){
-			var chars = $(el).children().not('b');
+			var allChars = $(el).children().not('b').not('.deleted'), 
+				caret = $(el).find('b'),
+				charsToRemove;
+			
 			if( range[0] == range[1] )
 				range[0]--;
-			chars.slice(range[0], range[1]).remove();
+				
+			charsToRemove = allChars.slice(range[0], range[1]);
+				
+			if( range[1] - range[0] == 1 ){
+				charsToRemove.css('position','absolute');
+				setTimeout(function(){ // Chrome must wait for the position:absolute to be rendered
+					charsToRemove.addClass('deleted');
+				},0);
+				setTimeout(function(){
+					charsToRemove.remove();
+				},140);
+			}
+			else
+				charsToRemove.remove();
 		},
 		
 		// recalculate textarea height or input width
@@ -152,7 +169,7 @@
 				var newWidth = el.parentNode.scrollWidth
 				// if there is a scroll (or should be) adjust with some extra width
 				if( el.parentNode.scrollWidth > el.parentNode.clientWidth )
-					newWidth += 10;
+					newWidth += 20;
 				
 				el.style.width = newWidth + 'px';
 				// re-adjustment
@@ -163,12 +180,12 @@
 		
 		keydown : function(e){
 			var charString = String.fromCharCode(e.charCode),
-				textCont = this.nextElementSibling,
+				textCont = this.nextElementSibling,  // text container DIV
 				appendIndex = this.selectionEnd,
 				undo = e.ctrlKey && e.keyCode == 90,
 				redo = e.ctrlKey && e.keyCode == 89,
 				selectAll = e.ctrlKey && e.keyCode == 65;
-				
+
 			fancyInput.textLength = this.value.length; // save a referece to later check if text was added in the "allEvents" callback
 			fancyInput.setCaret(this);
 
@@ -182,16 +199,25 @@
 				}, 50);
 				return true;
 			}
-				
-			if( e.keyCode == 8 ){
+			
+			// if BACKSPACE or DELETE
+			if( e.keyCode == 8 || e.keyCode == 46 ){
 				var rangeToDel = [this.selectionStart, this.selectionEnd];
 
 				if( charDir.lastDir == 'rtl' ) // BIDI support
 					rangeToDel = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
-
-				fancyInput.removeChars(textCont, rangeToDel);
+					
+				setTimeout(function(){ 
+					if( e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
+						rangeToDel = [e.target.selectionStart, rangeToDel[0]];
+					fancyInput.removeChars(textCont, rangeToDel);
+				},0);
 			}
 			
+			// make sure to reset the container scrollLeft when caret is the the START or ar the END
+			if( this.selectionStart == 0 )
+				this.parentNode.scrollLeft = 0;
+				
 			return true;
 		},
 		
@@ -201,7 +227,8 @@
 			if( e.type == 'paste' ){
 				setTimeout(function(){
 					fancyInput.fillText(e.target.value, e.target);
-				},100);
+					fancyInput.inputResize(e.target);
+				},20);
 			}
 			if( e.type == 'cut' ){
 				fancyInput.removeChars(this.nextElementSibling, [this.selectionStart, this.selectionEnd]);
@@ -210,34 +237,36 @@
 			if( e.type == 'select' ){
 			}
 			
-			// must wait until the rendering is finished
-			setTimeout(function(){
-				if( fancyInput.textLength != e.target.value.length ) // only resize if text was changed
-					fancyInput.inputResize(e.target);
-			},120);
-			
-			// make sure to reset the container scrollLeft
-			if( this.selectionStart == 0 )
-				this.parentNode.scrollLeft = 0;
+			if( fancyInput.textLength != e.target.value.length ) // only resize if text was changed
+				fancyInput.inputResize(e.target);
 			
 			// The caret height should be set. only once after the first character was entered.
 			if( !letterHeight ){
 				// in case text was pasted, wait for it to actually render
 				setTimeout(function(){ fancyInput.setCaretHeight(e.target) }, 150);
 			}
+			
+			if( this.selectionStart == this.value.length )
+				this.parentNode.scrollLeft = 999999; // this.parentNode.scrollLeftMax
 		},
 		
 		setCaret : function(input){
 			var caret = $(input.parentNode).find('.caret'),
+				allChars =  $(input.nextElementSibling).children().not('b'),
+				chars = allChars.not('.deleted'),
 				pos = fancyInput.getCaretPosition(input);
 
 				if( charDir.lastDir == 'rtl' ) // BIDI support
 					pos = input.value.length - pos;
 
-			var	insertPos = $(input.nextElementSibling).children().not('b').eq(pos);
+			var	insertPos = chars.eq(pos);
 
-			if(pos == input.value.length )
-				caret.appendTo(input.nextElementSibling);
+			if(pos == input.value.length ){
+				//if( !chars.length )
+				//	caret.prependTo( input.nextElementSibling );
+				//else
+					caret.appendTo( input.nextElementSibling );
+			}
 			else
 				caret.insertBefore( insertPos );
 		},
@@ -307,7 +336,6 @@
 			.on('keyup.fi select.fi mouseup.fi cut.fi paste.fi',selector, fancyInput.allEvents)
 			.on('mousedown.fi mouseup.fi keydown.fi',selector , getSelectionDirection.set)
 			.on('keydown.fi', selector , fancyInput.keydown);
-			
 	}
 
 	window.fancyInput = fancyInput;
