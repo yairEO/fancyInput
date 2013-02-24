@@ -82,14 +82,14 @@
 		
 		// change effects
 		function toggleEffect(num){
-			var className = 'fancyInput', 
+			var className = '';
 				idx = $(this).index() + 1,
 				$fancyInput = $('.fancyInput');
 
 			if( idx > 1 )
-				className += ' effect' + idx;
+				className = 'effect' + idx;
 
-			$fancyInput[0].className = className;
+			$('#content').prop('class', className);
 			$fancyInput.find(':input')[0].focus();
 			
 			$(this).addClass('active').siblings().removeClass('active');

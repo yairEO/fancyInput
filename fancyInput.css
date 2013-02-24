@@ -37,17 +37,17 @@
 
 
 /* DEMO text effects */
-.fancyInput.effect2 > div span.state1,
-.fancyInput.effect2 > div span.state2{ -webkit-transform:translateX(10px) scale(1.8); transform:translateX(10px) scale(1.8); }
+.effect2 .fancyInput > div span.state1,
+.effect2 .fancyInput > div span.state2{ -webkit-transform:translateX(10px) scale(1.8); transform:translateX(10px) scale(1.8); }
 
-.fancyInput.effect3 > div span{ -webkit-transition:200ms cubic-bezier(0.08, 0.6, 0.56, 1.4); transition:200ms cubic-bezier(0.08, 0.6, 0.56, 1.4); }
-.fancyInput.effect3 > div span.state1,
-.fancyInput.effect3 > div span.state2{ opacity:0; -webkit-transform:scale(0.4); transform:scale(0.4); -webkit-filter:blur(2px); }
+.effect3 .fancyInput > div span{ -webkit-transition:200ms cubic-bezier(0.08, 0.6, 0.56, 1.4); transition:200ms cubic-bezier(0.08, 0.6, 0.56, 1.4); }
+.effect3 .fancyInput > div span.state1,
+.effect3 .fancyInput > div span.state2{ opacity:0; -webkit-transform:scale(0.4); transform:scale(0.4); -webkit-filter:blur(2px); }
 
-.fancyInput.effect4 > div span{ -webkit-transition-duration:150ms; transition-duration:150ms; }
-.fancyInput.effect4 > div span.state1,
-.fancyInput.effect4 > div span.state2{ opacity:0; -webkit-transform:translateY(-60px); transform:translateY(-60px); }
+.effect4 .fancyInput > div span{ -webkit-transition-duration:150ms; transition-duration:150ms; }
+.effect4 .fancyInput > div span.state1,
+.effect4 .fancyInput > div span.state2{ opacity:0; -webkit-transform:translateY(-60px); transform:translateY(-60px); }
 
-.fancyInput.effect5 > div span{ -webkit-transition-duration:150ms; transition-duration:150ms; }
-.fancyInput.effect5 > div span.state1,
-.fancyInput.effect5 > div span.state2{ opacity:0; -webkit-transform:translateX(-30px); transform:translateX(-30px); opacity:0; }
+.effect5 .fancyInput > div span{ -webkit-transition-duration:150ms; transition-duration:150ms; }
+.effect5 .fancyInput > div span.state1,
+.effect5 .fancyInput > div span.state2{ opacity:0; -webkit-transform:translateX(-30px); transform:translateX(-30px); opacity:0; }
