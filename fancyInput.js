@@ -182,7 +182,7 @@
 			var charString = String.fromCharCode(e.charCode),
 				textCont = this.nextElementSibling,  // text container DIV
 				appendIndex = this.selectionEnd,
-				undo = e.ctrlKey && e.keyCode == 90,
+				undo = (e.ctrlKey && e.keyCode == 90) || (e.altKey && e.keyCode == 8),
 				redo = e.ctrlKey && e.keyCode == 89,
 				selectAll = e.ctrlKey && e.keyCode == 65;
 
