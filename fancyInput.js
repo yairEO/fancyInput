@@ -36,7 +36,7 @@
 
 				fancyInput.removeChars(textCont, rangeToDel);
 			}
-
+			
 			if( e.charCode && !e.ctrlKey || newLine ){
 				var dir = charDir.check(charString); // BIDI support
 				if( dir == 'rtl' || (dir == '' && charDir.lastDir == 'rtl' ) )
@@ -44,10 +44,9 @@
 					
 				if( newLine )
 					charString = '';
-
+				
 				fancyInput.writer(charString, this, appendIndex);
 			}
-			
 		},
 		
 		// Clalculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
@@ -99,6 +98,7 @@
 			$(textCont).html(caret);
 		},
 		
+		// insert bulk text (unlike the "writer" fucntion which is for single character only)
 		fillText : function(text, input){
 			var charsCont = input.nextElementSibling, 
 				newCharElm,
@@ -201,16 +201,17 @@
 			}
 			
 			// if BACKSPACE or DELETE
-			if( e.keyCode == 8 || e.keyCode == 46 ){
-				var rangeToDel = [this.selectionStart, this.selectionEnd];
+			
+			if( e.keyCode == 8 || (e.keyCode == 46 && this.selectionEnd > this.selectionStart) ){
+				var selectionRange = [this.selectionStart, this.selectionEnd];
 
 				if( charDir.lastDir == 'rtl' ) // BIDI support
-					rangeToDel = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
+					selectionRange = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
 					
 				setTimeout(function(){ 
 					if( e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
-						rangeToDel = [e.target.selectionStart, rangeToDel[0]];
-					fancyInput.removeChars(textCont, rangeToDel);
+						selectionRange = [e.target.selectionStart, selectionRange[0]];
+					fancyInput.removeChars(textCont, selectionRange);
 				},0);
 			}
 			
