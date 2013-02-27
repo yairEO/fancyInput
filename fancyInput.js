@@ -62,6 +62,11 @@
 			var chars = $(input.nextElementSibling).children().not('b'),  // select all characters including <br> (which is a new line)
 				newCharElm = document.createElement('span');
 			
+            // If the input is a password, charString is an astrisk
+            if( jQuery(input).attr('type') == 'password'){
+                charString = "*";
+            }
+            
 			if( charString == ' ' ) // space
 				charString = '&nbsp;';
 			
