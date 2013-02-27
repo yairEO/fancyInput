@@ -1,5 +1,5 @@
 /*!
-	fancyInput v1
+    fancyInput v1
 	(c) 2013 Yair Even Or <http://dropthebit.com>
 	
 	MIT-style license.
@@ -61,8 +61,13 @@
 		writer : function(charString, input, appendIndex){
 			var chars = $(input.nextElementSibling).children().not('b'),  // select all characters including <br> (which is a new line)
 				newCharElm = document.createElement('span');
-			
-			if( charString == ' ' ) // space
+            
+            // If the input is a password, charString is an astrisk
+            if( jQuery(input).attr('type') == 'password'){
+                charString = "*";
+            }
+
+            if( charString == ' ' ) // space
 				charString = '&nbsp;';
 			
 			if( charString ){
