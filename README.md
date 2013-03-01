@@ -8,14 +8,14 @@ Makes typing & deleting in input / Textarea fields exciting with CSS3 effects.
 ```html
 <!-- ...previous page content... -->
 <div>
-	<input type='text' />
+	<input type='text' >
 </div>
 <div>
 	<textarea></textarea>
 </div>
 <!-- ...other page content... -->
 <script>
-$('div :input').fancyInput();
+    $('div :input').fancyInput();
 </script>
 <!-- You could also use any other way of getting
 to the parent of the input/textarea, as long as you call .fancyInput(). -->
