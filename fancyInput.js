@@ -37,7 +37,7 @@
 				fancyInput.removeChars(textCont, rangeToDel);
 			}
 			
-			if( e.charCode && !e.ctrlKey || newLine ){
+			if( e.charCode && !(e.metaKey || e.ctrlKey) || newLine ){
 				var dir = charDir.check(charString); // BIDI support
 				if( dir == 'rtl' || (dir == '' && charDir.lastDir == 'rtl' ) )
 					appendIndex = this.value.length - this.selectionStart;
