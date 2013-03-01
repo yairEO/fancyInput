@@ -24,6 +24,7 @@
 
 		/* lettes */
 		.fancyInput > div span{ -webkit-transition:100ms cubic-bezier(0.08, 0.6, 0.56, 1.4); transition:100ms cubic-bezier(0.08, 0.6, 0.56, 1.4); display:inline-block; position:relative; }
+		.fancyInput > input[type=password] + div span:empty::after{ content:'●'; display:inline; }
 		.fancyInput > div .deleted{ opacity:0; -webkit-transition:140ms; transition:140ms; -webkit-transform:translateX(12px); transform:translateX(12px); }
 
 		/*.fancyInput > div span:last-of-type ~ br{ display:block; white-space:pre; }*/

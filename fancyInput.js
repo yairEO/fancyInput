@@ -1,5 +1,5 @@
 /*!
-	fancyInput v1
+	fancyInput v1.3.0
 	(c) 2013 Yair Even Or <http://dropthebit.com>
 	
 	MIT-style license.
@@ -11,7 +11,7 @@
 		letterHeight;
 
 	$.fn.fancyInput = function(){
-		if( !isIe )
+		if( !isIe || 'ontouchstart' in document.documentElement )
 			init( this );
 		return this;
 	}
@@ -25,7 +25,7 @@
 				appendIndex = this.selectionEnd,
 				newLine = this.tagName == 'TEXTAREA' && e.keyCode == 13;
 				
-			if( (this.selectionEnd - this.selectionStart) > 0 && e.charCode && !e.ctrlKey ){
+			if( (this.selectionEnd - this.selectionStart) > 0 && e.charCode && !(e.metaKey || e.ctrlKey) ){
 				var rangeToDel = [this.selectionStart, this.selectionEnd];
 				appendIndex = this.selectionStart;
 				
@@ -37,7 +37,7 @@
 				fancyInput.removeChars(textCont, rangeToDel);
 			}
 			
-			if( e.charCode && !e.ctrlKey || newLine ){
+			if( e.charCode && !(e.metaKey || e.ctrlKey) || newLine ){
 				var dir = charDir.check(charString); // BIDI support
 				if( dir == 'rtl' || (dir == '' && charDir.lastDir == 'rtl' ) )
 					appendIndex = this.value.length - this.selectionStart;
@@ -45,8 +45,29 @@
 				if( newLine )
 					charString = '';
 				
+/*				
+				setTimeout(function(){
+					console.log( e.target.value.slice(-1) );
+				},0);
+*/
+				
+				fancyInput.maskPassword(this);
+				
 				fancyInput.writer(charString, this, appendIndex);
 			}
+		},
+		
+		input : function(){
+			fancyInput.textLength = this.value.length; // save a referece to later check if text was added in the "allEvents" callback
+			fancyInput.inputResize( this );
+		},
+		
+		// if password field, delete all content
+		maskPassword : function(input){
+			if( input.type == 'password' )
+				$(input.nextElementSibling).find('span').each(function(){
+					this.innerHTML = '';
+				});
 		},
 		
 		// Clalculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
@@ -149,20 +170,22 @@
 		// recalculate textarea height or input width
 		inputResize : function(el){
 			if( el.tagName == 'TEXTAREA' ){
-				el.style.top = '-999px';
-				var newHeight = el.parentNode.scrollHeight;
-				
-				if( $(el).outerHeight() < el.parentNode.scrollHeight )
-					newHeight += 10;
-				
-				el.style.height = newHeight + 'px';
-				el.style.top = '0';
-				
-				// must re-adjust scrollTop after pasting long text
 				setTimeout(function(){
-					el.scrollTop = 0;
-					el.parentNode.scrollTop = 9999;
-				},50);
+					el.style.top = '-999px';
+					var newHeight = el.parentNode.scrollHeight;
+					
+					if( $(el).outerHeight() < el.parentNode.scrollHeight )
+						newHeight += 10;
+					
+					el.style.height = newHeight + 'px';
+					el.style.top = '0';
+					
+					// must re-adjust scrollTop after pasting long text
+					setTimeout(function(){
+						el.scrollTop = 0;
+						el.parentNode.scrollTop = 9999;
+					},50);
+				},0);
 			}
 			if( el.tagName == 'INPUT' && el.type == 'text' ){
 				el.style.width = 0;
@@ -182,13 +205,12 @@
 			var charString = String.fromCharCode(e.charCode),
 				textCont = this.nextElementSibling,  // text container DIV
 				appendIndex = this.selectionEnd,
-				undo = (e.ctrlKey && e.keyCode == 90) || (e.altKey && e.keyCode == 8),
-				redo = e.ctrlKey && e.keyCode == 89,
-				selectAll = e.ctrlKey && e.keyCode == 65;
+				undo = ((e.metaKey || e.ctrlKey) && e.keyCode == 90) || (e.altKey && e.keyCode == 8),
+				redo = (e.metaKey || e.ctrlKey) && e.keyCode == 89,
+				selectAll = (e.metaKey || e.ctrlKey) && e.keyCode == 65;
 
-			fancyInput.textLength = this.value.length; // save a referece to later check if text was added in the "allEvents" callback
 			fancyInput.setCaret(this);
-
+			
 			if( selectAll )
 				return true;
 
@@ -209,7 +231,7 @@
 					selectionRange = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
 					
 				setTimeout(function(){ 
-					if( e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
+					if( e.metaKey || e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
 						selectionRange = [e.target.selectionStart, selectionRange[0]];
 					fancyInput.removeChars(textCont, selectionRange);
 				},0);
@@ -224,7 +246,7 @@
 		
 		allEvents : function(e){
 			fancyInput.setCaret(this);
-
+			
 			if( e.type == 'paste' ){
 				setTimeout(function(){
 					fancyInput.fillText(e.target.value, e.target);
@@ -235,11 +257,9 @@
 				fancyInput.removeChars(this.nextElementSibling, [this.selectionStart, this.selectionEnd]);
 			}
 			
-			if( e.type == 'select' ){
-			}
-			
-			if( fancyInput.textLength != e.target.value.length ) // only resize if text was changed
-				fancyInput.inputResize(e.target);
+			// I use 50 but most numbers under 65 will do i believe
+			if( !e.keyCode || e.keyCode < 50 )
+				fancyInput.maskPassword(this);
 			
 			// The caret height should be set. only once after the first character was entered.
 			if( !letterHeight ){
@@ -333,9 +353,10 @@
 		// bind all the events to simulate an input type text (yes, alot)
 		
 		$(document)
+			.on('input.fi', selector, fancyInput.input)
 			.on('keypress.fi', selector, fancyInput.keypress)
-			.on('keyup.fi select.fi mouseup.fi cut.fi paste.fi',selector, fancyInput.allEvents)
-			.on('mousedown.fi mouseup.fi keydown.fi',selector , getSelectionDirection.set)
+			.on('keyup.fi select.fi mouseup.fi cut.fi paste.fi blur.fi', selector, fancyInput.allEvents)
+			.on('mousedown.fi mouseup.fi keydown.fi', selector, getSelectionDirection.set)
 			.on('keydown.fi', selector , fancyInput.keydown);
 	}
 
