@@ -82,6 +82,9 @@
 		writer : function(charString, input, appendIndex){
 			var chars = $(input.nextElementSibling).children().not('b'),  // select all characters including <br> (which is a new line)
 				newCharElm = document.createElement('span');
+				
+			if (chars.length > $(input).prop('maxlength'))
+				return;
 			
 			if( charString == ' ' ) // space
 				charString = '&nbsp;';
