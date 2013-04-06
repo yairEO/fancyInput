@@ -34,7 +34,7 @@
 					//appendIndex = this.value.length;
 				}
 
-				fancyInput.removeChars(textCont, rangeToDel);
+				return fancyInput.removeChars(textCont, rangeToDel);
 			}
 			
 			if( e.charCode && !(e.metaKey || e.ctrlKey) || newLine ){
@@ -53,8 +53,10 @@
 				
 				fancyInput.maskPassword(this);
 				
-				fancyInput.writer(charString, this, appendIndex);
+				return fancyInput.writer(charString, this, appendIndex);
 			}
+			
+			return charString && fancyInput.writer(charString, this, appendIndex);
 		},
 		
 		input : function(){
