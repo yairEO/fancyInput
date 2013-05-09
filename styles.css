@@ -1,5 +1,5 @@
 html{ height:100%; }
-body{ height:100%;text-align:center; }
+body{ height:100%; text-align:center; }
 #wrap{ min-width:600px; height:100%; position:relative; background:-webkit-radial-gradient(#205983, #0A2742); background:radial-gradient(#205983, #0A2742); overflow:hidden; }
 
 @font-face {

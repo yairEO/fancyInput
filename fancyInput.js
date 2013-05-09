@@ -8,6 +8,7 @@
 ;(function($){
 	"use strict";
 	var isIe = !!window.ActiveXObject,
+		isWebkit = 'webkitRequestAnimationFrame' in window,
 		letterHeight;
 
 	$.fn.fancyInput = function(){
@@ -156,9 +157,9 @@
 				
 			if( range[1] - range[0] == 1 ){
 				charsToRemove.css('position','absolute');
-				setTimeout(function(){ // Chrome must wait for the position:absolute to be rendered
-					charsToRemove.addClass('deleted');
-				},0);
+				if(isWebkit)
+					charsToRemove[0].offsetLeft;
+				charsToRemove.addClass('deleted');
 				setTimeout(function(){
 					charsToRemove.remove();
 				},140);
@@ -207,7 +208,9 @@
 				appendIndex = this.selectionEnd,
 				undo = ((e.metaKey || e.ctrlKey) && e.keyCode == 90) || (e.altKey && e.keyCode == 8),
 				redo = (e.metaKey || e.ctrlKey) && e.keyCode == 89,
-				selectAll = (e.metaKey || e.ctrlKey) && e.keyCode == 65;
+				selectAll = (e.metaKey || e.ctrlKey) && e.keyCode == 65,
+				caretAtEndNoSelection = (this.selectionEnd == this.selectionStart && this.selectionEnd == this.value.length ),
+				deleteKey = e.keyCode == 46 && !caretAtEndNoSelection;
 
 			fancyInput.setCaret(this);
 			
@@ -224,17 +227,23 @@
 			
 			// if BACKSPACE or DELETE
 			
-			if( e.keyCode == 8 || (e.keyCode == 46 && this.selectionEnd > this.selectionStart) ){
+			if( e.keyCode == 8 || deleteKey ){
 				var selectionRange = [this.selectionStart, this.selectionEnd];
-
 				if( charDir.lastDir == 'rtl' ) // BIDI support
 					selectionRange = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
 					
-				setTimeout(function(){ 
-					if( e.metaKey || e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
-						selectionRange = [e.target.selectionStart, selectionRange[0]];
+				// on pressing 'delete' while nothing is selected, and caret is not at the end
+				if( deleteKey && (this.selectionEnd == this.selectionStart && this.selectionEnd < this.value.length) ){
+					selectionRange[0] += 1;
+					selectionRange[1] += 1;
 					fancyInput.removeChars(textCont, selectionRange);
-				},0);
+				}
+				else
+					setTimeout(function(){ 
+						if( e.metaKey || e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
+							selectionRange = [e.target.selectionStart, selectionRange[0]];
+						fancyInput.removeChars(textCont, selectionRange);
+					},0);
 			}
 			
 			// make sure to reset the container scrollLeft when caret is the the START or ar the END
