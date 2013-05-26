@@ -142,6 +142,8 @@
 				}
 				charsCont.appendChild(frag);
 			},0);
+			
+			$(input).val(text);
 		},
 		
 		// Handles characters removal from the fake text input
