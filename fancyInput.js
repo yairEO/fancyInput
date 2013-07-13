@@ -96,7 +96,7 @@
 				newCharElm = document.createElement('br');
 
 			if( chars.length ){
-				if( appendIndex == 0 )
+				if( appendIndex === 0 )
 					$(input.nextElementSibling).prepend(newCharElm);
 				else{
 					var appendPos = chars.eq(--appendIndex);
@@ -111,6 +111,10 @@
 				setTimeout(function(){
 					newCharElm.removeAttribute("class");
 				},20);
+				if ( charString === '&nbsp;')
+					$(input).trigger('fi:space',{val:charString,index:appendIndex});
+				else
+					$(input).trigger('fi:addLetter',{val:charString,index:appendIndex});
 			}
 
 			return this;
@@ -140,6 +144,7 @@
 					newCharElm = document.createElement(newElm);
 					newCharElm.innerHTML = (text[i] == ' ') ? '&nbsp;' : text[i];
 					frag.appendChild(newCharElm);
+					$(input).trigger('fi:addLetter',{val:newCharElm.innerHTML,index:i});
 				}
 				charsCont.appendChild(frag);
 			},0);
@@ -165,6 +170,8 @@
 			}
 			else
 				charsToRemove.remove();
+
+			$(el).siblings('textarea').trigger('fi:deleteLetter',{range:range});
 		},
 
 		// recalculate textarea height or input width
@@ -268,6 +275,10 @@
 			// I use 50 but most numbers under 65 will do i believe
 			if( !e.keyCode || e.keyCode < 50 )
 				fancyInput.maskPassword(this);
+
+			if(e.which == 13) {
+				$(e.currentTarget).trigger('fi:linebreak');
+			}
 
 			// The caret height should be set. only once after the first character was entered.
 			if( !letterHeight ){
