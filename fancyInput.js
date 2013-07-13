@@ -15,8 +15,8 @@
 		if( !isIe || 'ontouchstart' in document.documentElement )
 			init( this );
 		return this;
-	}
-	
+	};
+
 	var fancyInput = {
 		classToggler : 'state1',
 
@@ -25,11 +25,11 @@
 				textCont = this.nextElementSibling,
 				appendIndex = this.selectionEnd,
 				newLine = this.tagName == 'TEXTAREA' && e.keyCode == 13;
-				
+
 			if( (this.selectionEnd - this.selectionStart) > 0 && e.charCode && !(e.metaKey || e.ctrlKey) ){
 				var rangeToDel = [this.selectionStart, this.selectionEnd];
 				appendIndex = this.selectionStart;
-				
+
 				if( charDir.lastDir == 'rtl' ){ // BIDI support
 					rangeToDel = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
 					//appendIndex = this.value.length;
@@ -37,32 +37,33 @@
 
 				fancyInput.removeChars(textCont, rangeToDel);
 			}
-			
+
 			if( e.charCode && !(e.metaKey || e.ctrlKey) || newLine ){
 				var dir = charDir.check(charString); // BIDI support
-				if( dir == 'rtl' || (dir == '' && charDir.lastDir == 'rtl' ) )
+				if( dir === 'rtl' || (dir === '' && charDir.lastDir === 'rtl' ) )
 					appendIndex = this.value.length - this.selectionStart;
-					
+
+
 				if( newLine )
 					charString = '';
-				
+
 /*				
 				setTimeout(function(){
 					console.log( e.target.value.slice(-1) );
 				},0);
 */
-				
+
 				fancyInput.maskPassword(this);
-				
+
 				fancyInput.writer(charString, this, appendIndex);
 			}
 		},
-		
+
 		input : function(){
 			fancyInput.textLength = this.value.length; // save a referece to later check if text was added in the "allEvents" callback
 			fancyInput.inputResize( this );
 		},
-		
+
 		// if password field, delete all content
 		maskPassword : function(input){
 			if( input.type == 'password' )
@@ -70,7 +71,7 @@
 					this.innerHTML = '';
 				});
 		},
-		
+
 		// Clalculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
 		setCaretHeight : function(input){
 			var lettersWrap = $(input.nextElementSibling);
@@ -83,10 +84,10 @@
 		writer : function(charString, input, appendIndex){
 			var chars = $(input.nextElementSibling).children().not('b'),  // select all characters including <br> (which is a new line)
 				newCharElm = document.createElement('span');
-			
+
 			if( charString == ' ' ) // space
 				charString = '&nbsp;';
-			
+
 			if( charString ){
 				newCharElm.innerHTML = charString;
 				this.classToggler = this.classToggler == 'state2' ? 'state1' : 'state2';
@@ -94,24 +95,30 @@
 			}
 			else
 				newCharElm = document.createElement('br');
-			
+
 			if( chars.length ){
-				if( appendIndex == 0 ) 
+				if( appendIndex === 0 )
 					$(input.nextElementSibling).prepend(newCharElm);
 				else{
-					var appendPos = chars.eq(--appendIndex);
+					var appendPos = chars.eq(appendIndex - 1);
 					appendPos.after(newCharElm);
 				}
 			}
 			else
 				input.nextElementSibling.appendChild(newCharElm);
 
+
 			// let the render tree settle down with the new class, then remove it
-			if( charString)
+			if( charString) {
 				setTimeout(function(){
 					newCharElm.removeAttribute("class");
 				},20);
-			
+				if ( charString === '&nbsp;')
+					$(input).trigger('fi.space',{val:charString,index:appendIndex});
+				else
+					$(input).trigger('fi.addLetter',{val:charString,index:appendIndex});
+			}
+
 			return this;
 		},
 
@@ -119,18 +126,18 @@
 			var caret = $(textCont.parentNode).find('.caret');
 			$(textCont).html(caret);
 		},
-		
+
 		// insert bulk text (unlike the "writer" fucntion which is for single character only)
 		fillText : function(text, input){
-			var charsCont = input.nextElementSibling, 
+			var charsCont = input.nextElementSibling,
 				newCharElm,
 				frag = document.createDocumentFragment();
 
 			fancyInput.clear( input.nextElementSibling );
-			
+
 			setTimeout( function(){
 				var length = text.length;
-					
+
 				for( var i=0; i < length; i++ ){
 					var newElm = 'span';
 					//fancyInput.writer( text[i], input, i);
@@ -139,26 +146,25 @@
 					newCharElm = document.createElement(newElm);
 					newCharElm.innerHTML = (text[i] == ' ') ? '&nbsp;' : text[i];
 					frag.appendChild(newCharElm);
+					$(input).trigger('fi.addLetter',{val:newCharElm.innerHTML,index:i});
 				}
 				charsCont.appendChild(frag);
 			},0);
 		},
-		
+
 		// Handles characters removal from the fake text input
 		removeChars : function(el, range){
-			var allChars = $(el).children().not('b').not('.deleted'), 
+			var allChars = $(el).children().not('b').not('.deleted'),
 				caret = $(el).find('b'),
 				charsToRemove;
-			
+
 			if( range[0] == range[1] )
 				range[0]--;
-				
+
 			charsToRemove = allChars.slice(range[0], range[1]);
-				
+
 			if( range[1] - range[0] == 1 ){
 				charsToRemove.css('position','absolute');
-				if(isWebkit)
-					charsToRemove[0].offsetLeft;
 				charsToRemove.addClass('deleted');
 				setTimeout(function(){
 					charsToRemove.remove();
@@ -166,21 +172,23 @@
 			}
 			else
 				charsToRemove.remove();
+
+			$(el).siblings('textarea').trigger('fi.deleteLetter',{range:range});
 		},
-		
+
 		// recalculate textarea height or input width
 		inputResize : function(el){
 			if( el.tagName == 'TEXTAREA' ){
 				setTimeout(function(){
 					el.style.top = '-999px';
 					var newHeight = el.parentNode.scrollHeight;
-					
+
 					if( $(el).outerHeight() < el.parentNode.scrollHeight )
 						newHeight += 10;
-					
+
 					el.style.height = newHeight + 'px';
 					el.style.top = '0';
-					
+
 					// must re-adjust scrollTop after pasting long text
 					setTimeout(function(){
 						el.scrollTop = 0;
@@ -190,18 +198,18 @@
 			}
 			if( el.tagName == 'INPUT' && el.type == 'text' ){
 				el.style.width = 0;
-				var newWidth = el.parentNode.scrollWidth
+				var newWidth = el.parentNode.scrollWidth;
 				// if there is a scroll (or should be) adjust with some extra width
 				if( el.parentNode.scrollWidth > el.parentNode.clientWidth )
 					newWidth += 20;
-				
+
 				el.style.width = newWidth + 'px';
 				// re-adjustment
 				//el.scrollLeft = 9999;
 				//el.parentNode.scrollLeft += offset;
 			}
 		},
-		
+
 		keydown : function(e){
 			var charString = String.fromCharCode(e.charCode),
 				textCont = this.nextElementSibling,  // text container DIV
@@ -213,7 +221,7 @@
 				deleteKey = e.keyCode == 46 && !caretAtEndNoSelection;
 
 			fancyInput.setCaret(this);
-			
+
 			if( selectAll )
 				return true;
 
@@ -224,14 +232,14 @@
 				}, 50);
 				return true;
 			}
-			
+
 			// if BACKSPACE or DELETE
-			
+
 			if( e.keyCode == 8 || deleteKey ){
 				var selectionRange = [this.selectionStart, this.selectionEnd];
 				if( charDir.lastDir == 'rtl' ) // BIDI support
 					selectionRange = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
-					
+
 				// on pressing 'delete' while nothing is selected, and caret is not at the end
 				if( deleteKey && (this.selectionEnd == this.selectionStart && this.selectionEnd < this.value.length) ){
 					selectionRange[0] += 1;
@@ -239,23 +247,23 @@
 					fancyInput.removeChars(textCont, selectionRange);
 				}
 				else
-					setTimeout(function(){ 
+					setTimeout(function(){
 						if( e.metaKey || e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
 							selectionRange = [e.target.selectionStart, selectionRange[0]];
 						fancyInput.removeChars(textCont, selectionRange);
 					},0);
 			}
-			
+
 			// make sure to reset the container scrollLeft when caret is the the START or ar the END
-			if( this.selectionStart == 0 )
+			if( this.selectionStart === 0 )
 				this.parentNode.scrollLeft = 0;
-				
+
 			return true;
 		},
-		
+
 		allEvents : function(e){
 			fancyInput.setCaret(this);
-			
+
 			if( e.type == 'paste' ){
 				setTimeout(function(){
 					fancyInput.fillText(e.target.value, e.target);
@@ -265,21 +273,25 @@
 			if( e.type == 'cut' ){
 				fancyInput.removeChars(this.nextElementSibling, [this.selectionStart, this.selectionEnd]);
 			}
-			
+
 			// I use 50 but most numbers under 65 will do i believe
 			if( !e.keyCode || e.keyCode < 50 )
 				fancyInput.maskPassword(this);
-			
+
+			if(e.which == 13) {
+				$(e.currentTarget).trigger('fi.linebreak');
+			}
+
 			// The caret height should be set. only once after the first character was entered.
 			if( !letterHeight ){
 				// in case text was pasted, wait for it to actually render
-				setTimeout(function(){ fancyInput.setCaretHeight(e.target) }, 150);
+				setTimeout(function(){ fancyInput.setCaretHeight(e.target); }, 150);
 			}
-			
+
 			if( this.selectionStart == this.value.length )
 				this.parentNode.scrollLeft = 999999; // this.parentNode.scrollLeftMax
 		},
-		
+
 		setCaret : function(input){
 			var caret = $(input.parentNode).find('.caret'),
 				allChars =  $(input.nextElementSibling).children().not('b'),
@@ -300,7 +312,7 @@
 			else
 				caret.insertBefore( insertPos );
 		},
-		
+
 		getCaretPosition : function(input){
 			var caretPos, direction = getSelectionDirection.direction || 'right';
 			if( input.selectionStart || input.selectionStart == '0' )
@@ -323,10 +335,10 @@
 				getSelectionDirection.lastOffset = e.clientX;
 			else if( e.type == 'mouseup' )
 				d = e.clientX < getSelectionDirection.lastOffset ? 'left' : 'right';
-				
+
 			getSelectionDirection.direction = d;
 		}
-	}, 
+	},
 
 	charDir = {
 		lastDir : null,
@@ -340,7 +352,7 @@
 			if( dir ) this.lastDir = dir;
 			return dir;
 		}
-	}
+	};
 
 	function init(inputs){
 		var selector = inputs.selector;
@@ -348,19 +360,19 @@
 		inputs.each(function(){
 			var className = 'fancyInput',
 				template = $('<div><b class="caret">&#8203;</b></div>');
-				
+
 			if( this.tagName == 'TEXTAREA' )
 				className += ' textarea';
 			// add need DOM for the plugin to work
 			$(this.parentNode).append(template).addClass(className);
-	
+
 			// populate the fake field if there was any text in the real input
 			if( this.value )
 				fancyInput.fillText(this.value, this);
 		});
-		
+
 		// bind all the events to simulate an input type text (yes, alot)
-		
+
 		$(document)
 			.on('input.fi', selector, fancyInput.input)
 			.on('keypress.fi', selector, fancyInput.keypress)
