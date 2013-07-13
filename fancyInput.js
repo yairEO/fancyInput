@@ -1,5 +1,5 @@
 /*!
-	fancyInput v1.3.0
+	fancyInput v1.3.1
 	(c) 2013 Yair Even Or <http://dropthebit.com>
 	
 	MIT-style license.
@@ -112,9 +112,9 @@
 					newCharElm.removeAttribute("class");
 				},20);
 				if ( charString === '&nbsp;')
-					$(input).trigger('fi:space',{val:charString,index:appendIndex});
+					$(input).trigger('fi.space',{val:charString,index:appendIndex});
 				else
-					$(input).trigger('fi:addLetter',{val:charString,index:appendIndex});
+					$(input).trigger('fi.addLetter',{val:charString,index:appendIndex});
 			}
 
 			return this;
@@ -144,7 +144,7 @@
 					newCharElm = document.createElement(newElm);
 					newCharElm.innerHTML = (text[i] == ' ') ? '&nbsp;' : text[i];
 					frag.appendChild(newCharElm);
-					$(input).trigger('fi:addLetter',{val:newCharElm.innerHTML,index:i});
+					$(input).trigger('fi.addLetter',{val:newCharElm.innerHTML,index:i});
 				}
 				charsCont.appendChild(frag);
 			},0);
@@ -171,7 +171,7 @@
 			else
 				charsToRemove.remove();
 
-			$(el).siblings('textarea').trigger('fi:deleteLetter',{range:range});
+			$(el).siblings('textarea').trigger('fi.deleteLetter',{range:range});
 		},
 
 		// recalculate textarea height or input width
@@ -277,7 +277,7 @@
 				fancyInput.maskPassword(this);
 
 			if(e.which == 13) {
-				$(e.currentTarget).trigger('fi:linebreak');
+				$(e.currentTarget).trigger('fi.linebreak');
 			}
 
 			// The caret height should be set. only once after the first character was entered.
