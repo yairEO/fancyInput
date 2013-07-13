@@ -1,5 +1,5 @@
 /*!
-	fancyInput v1.3.1
+	fancyInput v1.3.0
 	(c) 2013 Yair Even Or <http://dropthebit.com>
 	
 	MIT-style license.
@@ -42,6 +42,7 @@
 				var dir = charDir.check(charString); // BIDI support
 				if( dir === 'rtl' || (dir === '' && charDir.lastDir === 'rtl' ) )
 					appendIndex = this.value.length - this.selectionStart;
+
 
 				if( newLine )
 					charString = '';
@@ -99,12 +100,13 @@
 				if( appendIndex === 0 )
 					$(input.nextElementSibling).prepend(newCharElm);
 				else{
-					var appendPos = chars.eq(--appendIndex);
+					var appendPos = chars.eq(appendIndex - 1);
 					appendPos.after(newCharElm);
 				}
 			}
 			else
 				input.nextElementSibling.appendChild(newCharElm);
+
 
 			// let the render tree settle down with the new class, then remove it
 			if( charString) {
