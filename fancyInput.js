@@ -362,6 +362,7 @@
 		// bind all the events to simulate an input type text (yes, alot)
 		
 		$(document)
+		        .off('.fi', selector)
 			.on('input.fi', selector, fancyInput.input)
 			.on('keypress.fi', selector, fancyInput.keypress)
 			.on('keyup.fi select.fi mouseup.fi cut.fi paste.fi blur.fi', selector, fancyInput.allEvents)
