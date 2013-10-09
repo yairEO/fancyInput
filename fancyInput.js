@@ -143,6 +143,36 @@
 				charsCont.appendChild(frag);
 			},0);
 		},
+
+		kotoeri : function (text, input) {
+			var charsCont = input.nextElementSibling, 
+				newCharElm,
+				frag = document.createDocumentFragment();
+
+			fancyInput.clear( input.nextElementSibling );
+			
+			setTimeout( function(){
+				var length = text.length;
+					
+				for( var i=0; i < length; i++ ){
+					var newElm = 'span';
+					//fancyInput.writer( text[i], input, i);
+					if( text[i] == '\n' )
+						newElm = 'br';
+					newCharElm = document.createElement(newElm);
+					newCharElm.innerHTML = (text[i] == ' ') ? '&nbsp;' : text[i];
+					this.classToggler = this.classToggler == 'state2' ? 'state1' : 'state2';
+					frag.appendChild(newCharElm);
+					setTimeout(function(){
+						newCharElm.className = this.classToggler;
+						setTimeout(function(){
+							newCharElm.className = '';
+						},50);
+					},0);
+				}
+				charsCont.appendChild(frag);
+			},0);
+		},
 		
 		// Handles characters removal from the fake text input
 		removeChars : function(el, range){
@@ -249,7 +279,7 @@
 			
 			if (kotoeri){
 				setTimeout( function(){
-					fancyInput.fillText(e.target.value, e.target);
+					fancyInput.kotoeri(e.target.value, e.target);
 				}, 50);
 				return true;
 			}
