@@ -1,5 +1,5 @@
 /*!
-	fancyInput v1.3.0
+	fancyInput v1.3.2
 	(c) 2013 Yair Even Or <http://dropthebit.com>
 	
 	MIT-style license.
@@ -59,7 +59,7 @@
 		},
 		
 		input : function(){
-			fancyInput.textLength = this.value.length; // save a referece to later check if text was added in the "allEvents" callback
+			fancyInput.textLength = this.value.length; // save a reference to later check if text was added in the "allEvents" callback
 			fancyInput.inputResize( this );
 		},
 		
@@ -79,7 +79,8 @@
 			letterHeight = lettersWrap.find('span')[0].clientHeight;
 			lettersWrap.find('b').height(letterHeight);
 		},
-
+		
+		// writes a single character every time
 		writer : function(charString, input, appendIndex){
 			var chars = $(input.nextElementSibling).children().not('b'),  // select all characters including <br> (which is a new line)
 				newCharElm = document.createElement('span');
@@ -120,7 +121,7 @@
 			$(textCont).html(caret);
 		},
 		
-		// insert bulk text (unlike the "writer" fucntion which is for single character only)
+		// insert bulk text (unlike the "writer" function which is for single character only)
 		fillText : function(text, input){
 			var charsCont = input.nextElementSibling, 
 				newCharElm,
@@ -218,7 +219,7 @@
 				return true;
 
 			if( undo || redo ){
-				// give the undo time actually remove the text from the DOM
+				// give the undo time to actually remove the text from the DOM
 				setTimeout( function(){
 					fancyInput.fillText(e.target.value, e.target);
 				}, 50);
@@ -278,6 +279,9 @@
 			
 			if( this.selectionStart == this.value.length )
 				this.parentNode.scrollLeft = 999999; // this.parentNode.scrollLeftMax
+				
+			this.nextElementSibling.className = this.value ? '' : 'empty';
+				
 		},
 		
 		setCaret : function(input){
@@ -351,12 +355,19 @@
 				
 			if( this.tagName == 'TEXTAREA' )
 				className += ' textarea';
-			// add need DOM for the plugin to work
+			// add needed DOM for the plugin to work
 			$(this.parentNode).append(template).addClass(className);
 	
-			// populate the fake field if there was any text in the real input
+			// populate the fake field with any text that might have been on real input at the time of initialization
 			if( this.value )
 				fancyInput.fillText(this.value, this);
+			
+			if( this.placeholder ){
+				template.attr('data-placeholder', this.placeholder);
+				if( !this.value )
+					template.addClass('empty');
+			}
+				
 		});
 		
 		// bind all the events to simulate an input type text (yes, alot)

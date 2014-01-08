@@ -43,7 +43,7 @@
 		<div id='content'>
 			<section class='input'>
 				<div>
-					<input type='text'>
+					<input type='text' placeholder='type something...'>
 				</div>
 			</section>
 			<section class='textarea'>
@@ -65,6 +65,8 @@
 				s = 'type something... ✌'.split('').reverse(),
 				len = s.length-1,
 				e = $.Event('keypress');
+				
+				input.nextElementSibling.className = '';
 			
 			var	initInterval = setInterval(function(){
 					if( s.length ){
@@ -119,7 +121,9 @@
 		}
 		
 		// social sharing stuff
-		setTimeout(function(){
+		setTimeout(addSocial,500);
+		
+		function addSocial(){
 			// tweet button
 			var tweeter = $('<a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>');
 			// facebook 'like' button
@@ -130,7 +134,7 @@
 
 			window.getComputedStyle(fbLike[0]).getPropertyValue('top');
 			$('.social').addClass('show');
-		},500);
+		};
 	</script>
 </body> 
 </html>
