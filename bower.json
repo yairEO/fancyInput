@@ -1,0 +1,11 @@
+{
+  "name": "yairEO/fancyInput",
+  "version": "1.3.2",
+  "main": "/",
+  "description": "turns input or textarea into much cooler typing fields with CSS3 letter-typing effects",
+  "license": "Eclipse",
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt"
+  ]
+}
