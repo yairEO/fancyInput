@@ -13,7 +13,7 @@ $ease-out-bounce: cubic-bezier(0, 0.6, 0.55, 1.4);
 	:-webkit-placeholder{ color:rgba(255,255,255,0.2); }
 
 	&.textarea{ white-space:normal; overflow:auto; }
-	input, textarea{ color:transparent; position:absolute; z-index:2; width:100%; border:0; outline:0; top:0px; left:0; background:none; padding:inherit; padding-bottom:0; font-family:$fi-font-family; font-size:inherit; letter-spacing:-1px;  -moz-box-sizing:border-box; -webkit-box-sizing:border-box; }
+	input, & textarea{ color:transparent; position:absolute; z-index:2; width:100%; border:0; outline:0; top:0px; left:0; background:none; padding:inherit; padding-bottom:0; font-family:$fi-font-family; font-size:inherit; letter-spacing:-1px;  -moz-box-sizing:border-box; -webkit-box-sizing:border-box; }
 	input{ top:1px; left:-1px; padding-right:0; }
 	textarea{ word-break:break-all; overflow:hidden; height:100%; }
 	
