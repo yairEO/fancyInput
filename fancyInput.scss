@@ -1,5 +1,6 @@
 $fi-font-family: 'Fjalla One', sans-serif;
 $ease-out-bounce: cubic-bezier(0, 0.6, 0.55, 1.4);
+$use-default-placeholder: 'no';
 
 @keyframes caret{ 
 	50%{ opacity:0.1; transform:scaleY(.8); } 
@@ -9,18 +10,31 @@ $ease-out-bounce: cubic-bezier(0, 0.6, 0.55, 1.4);
 }
 
 .fancyInput{ display:inline-block; letter-spacing:-1px; text-shadow:0 2px 5px rgba(0,0,0,.6); white-space:nowrap; width:auto; font-family:$fi-font-family; position:relative;
-	:-moz-placeholder{ color:rgba(255,255,255,0.2); } /* deprecated. but works for now. should use double '::'*/
-	:-webkit-placeholder{ color:rgba(255,255,255,0.2); }
-
+	//------------------------------------
+	// Default placeholder color
+	
+	$placeholder-color: rgba(255,255,255,0.1);
+	
+	@if( $use-default-placeholder == 'no' ){
+		$placeholder-color: transparent;
+	}
+	
+	::-webkit-input-placeholder { color:$placeholder-color; } // WebKit browsers
+	:-moz-placeholder{ color:$placeholder-color; } // Mozilla Firefox 4 to 18 
+	::-moz-placeholder{ color:$placeholder-color; } // Mozilla Firefox 19+ 
+	:-ms-input-placeholder{ color:$placeholder-color; } // Internet Explorer 10+ 
+	//------------------------------------
+	
 	&.textarea{ white-space:normal; overflow:auto; }
 	input, & textarea{ color:transparent; position:absolute; z-index:2; width:100%; border:0; outline:0; top:0px; left:0; background:none; padding:inherit; padding-bottom:0; font-family:$fi-font-family; font-size:inherit; letter-spacing:-1px;  -moz-box-sizing:border-box; -webkit-box-sizing:border-box; }
 	input{ top:1px; left:-1px; padding-right:0; }
 	textarea{ word-break:break-all; overflow:hidden; height:100%; }
 	
 	> div{ display:inline-block; position:relative;
-		// placeholder
-		&:before{ opacity:0; left:-20px; content:attr(data-placeholder); position:absolute; transition:0.3s ease-out; }
-		&.empty:before{ opacity:0.2; left:0; }
+		@if( $use-default-placeholder == 'no' ){
+			&:before{ opacity:0; left:-20px; content:attr(data-placeholder); position:absolute; transition:0.3s ease-out; }
+			&.empty:before{ opacity:0.2; left:0; }
+		}
 	}
 	input:focus ~ div.empty:before{ opacity:.1; }
 	

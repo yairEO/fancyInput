@@ -17,16 +17,19 @@
   width: auto;
   font-family: "Fjalla One", sans-serif;
   position: relative;
-  /* deprecated. but works for now. should use double '::'*/
   /* only Caret which is  */
   /* lettes */
   /*.fancyInput > div span:last-of-type ~ br{ display:block; white-space:pre; }*/
   /*.fancyInput br:last-of-type + .caret{ position:static; display:inline-block; }*/
   /* text effects */ }
+  .fancyInput ::-webkit-input-placeholder {
+    color: transparent; }
   .fancyInput :-moz-placeholder {
-    color: rgba(255, 255, 255, 0.2); }
-  .fancyInput :-webkit-placeholder {
-    color: rgba(255, 255, 255, 0.2); }
+    color: transparent; }
+  .fancyInput ::-moz-placeholder {
+    color: transparent; }
+  .fancyInput :-ms-input-placeholder {
+    color: transparent; }
   .fancyInput.textarea {
     white-space: normal;
     overflow: auto; }
