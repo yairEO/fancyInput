@@ -11,9 +11,13 @@
 		isWebkit = 'webkitRequestAnimationFrame' in window,
 		letterHeight;
 
-	$.fn.fancyInput = function(){
+	$.fn.fancyInput = function(dest){
 		if( !isIe || 'ontouchstart' in document.documentElement )
-			init( this );
+			if (dest === true) {
+				destroy( this );
+			} else {
+				init( this );
+			}
 		return this;
 	}
 	
@@ -158,7 +162,7 @@
 				
 			if( range[1] - range[0] == 1 ){
 				charsToRemove.css('position','absolute');
-				if(isWebkit)
+				if(isWebkit && charsToRemove.length > 0)
 					charsToRemove[0].offsetLeft;
 				charsToRemove.addClass('deleted');
 				setTimeout(function(){
@@ -378,6 +382,17 @@
 			.on('keyup.fi select.fi mouseup.fi cut.fi paste.fi blur.fi', selector, fancyInput.allEvents)
 			.on('mousedown.fi mouseup.fi keydown.fi', selector, getSelectionDirection.set)
 			.on('keydown.fi', selector , fancyInput.keydown);
+	}
+
+
+	function destroy(inputs) {
+		var selector = inputs.selector;
+		$(document)
+			.off('input.fi', selector)
+			.off('keypress.fi', selector)
+			.off('keyup.fi select.fi mouseup.fi cut.fi paste.fi blur.fi', selector)
+			.off('mousedown.fi mouseup.fi keydown.fi', selector)
+			.off('keydown.fi', selector);
 	}
 
 	window.fancyInput = fancyInput;
