@@ -1,11 +1,11 @@
 /*!
 	fancyInput v1.3.2
 	(c) 2013 Yair Even Or <http://dropthebit.com>
-	
+
 	MIT-style license.
 */
 
-;(function($){
+(function($){
 	"use strict";
 	var isIe = !!window.ActiveXObject,
 		isWebkit = 'webkitRequestAnimationFrame' in window,
@@ -16,20 +16,71 @@
 			init( this );
 		return this;
 	}
-	
+	var before_text = '';
 	var fancyInput = {
 		classToggler : 'state1',
+
+		update: function (e){
+			var new_text = e.target.value;
+			var old_text = before_text;
+
+			var buf;
+			var display_group = $(this.nextElementSibling);
+			var display_elms = display_group.find("span");
+			display_elms.each(function (ii, elm){
+				buf = $(elm).text();
+				if (buf == '&nbsp;'){
+					buf = " ";
+				}
+				old_text += $(elm).text();
+			});
+			if (new_text != old_text){
+				var max_length = Math.min(new_text.length, old_text.length);
+				var unmatch_prefix_index = max_length; // 前方一致
+				for(var ii=0; ii<max_length; ii++){
+					if(new_text[ii] != old_text[ii]){
+						unmatch_prefix_index = ii;
+						break;
+					}
+				}
+
+				var unmatch_suffix_index = max_length; // 後方一致
+				var new_text_reverse = new_text.split("").reverse().join("");
+				var old_text_reverse = old_text.split("").reverse().join("");
+				for(var ii=0; ii<max_length; ii++){
+					if(new_text_reverse[ii] != old_text_reverse[ii]){
+						unmatch_suffix_index = ii;
+						break;
+					}
+				}
+
+				var real_unmatch_suffix_index = display_elms.length - unmatch_suffix_index;
+				for(var ii=unmatch_prefix_index; ii<real_unmatch_suffix_index; ii++){
+					$(display_elms[ii]).remove();
+				}
+
+				var cur = display_elms[unmatch_prefix_index-1];
+				var insert_chars = new_text.slice(unmatch_prefix_index, new_text.length - unmatch_suffix_index);
+				for(var ii=0; ii<insert_chars.length; ii++){
+					var ch = insert_chars[ii];
+					var span = $("<span/>").text(ch);
+					fancyInput.writer(ch, this, ii+unmatch_prefix_index);
+				}
+				fancyInput.maskPassword(this);
+				before_text = new_text;
+			}
+		},
 
 		keypress : function(e){
 			var charString = String.fromCharCode(e.charCode),
 				textCont = this.nextElementSibling,
 				appendIndex = this.selectionEnd,
 				newLine = this.tagName == 'TEXTAREA' && e.keyCode == 13;
-				
+
 			if( (this.selectionEnd - this.selectionStart) > 0 && e.charCode && !(e.metaKey || e.ctrlKey) ){
 				var rangeToDel = [this.selectionStart, this.selectionEnd];
 				appendIndex = this.selectionStart;
-				
+
 				if( charDir.lastDir == 'rtl' ){ // BIDI support
 					rangeToDel = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
 					//appendIndex = this.value.length;
@@ -37,32 +88,30 @@
 
 				fancyInput.removeChars(textCont, rangeToDel);
 			}
-			
+
 			if( e.charCode && !(e.metaKey || e.ctrlKey) || newLine ){
 				var dir = charDir.check(charString); // BIDI support
 				if( dir == 'rtl' || (dir == '' && charDir.lastDir == 'rtl' ) )
 					appendIndex = this.value.length - this.selectionStart;
-					
+
 				if( newLine )
 					charString = '';
-				
-/*				
+
+/*
 				setTimeout(function(){
 					console.log( e.target.value.slice(-1) );
 				},0);
 */
-				
-				fancyInput.maskPassword(this);
-				
-				fancyInput.writer(charString, this, appendIndex);
+
+
 			}
 		},
-		
+
 		input : function(){
 			fancyInput.textLength = this.value.length; // save a reference to later check if text was added in the "allEvents" callback
 			fancyInput.inputResize( this );
 		},
-		
+
 		// if password field, delete all content
 		maskPassword : function(input){
 			if( input.type == 'password' )
@@ -70,7 +119,7 @@
 					this.innerHTML = '';
 				});
 		},
-		
+
 		// Clalculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
 		setCaretHeight : function(input){
 			var lettersWrap = $(input.nextElementSibling);
@@ -79,19 +128,19 @@
 			letterHeight = lettersWrap.find('span')[0].clientHeight;
 			lettersWrap.find('b').height(letterHeight);
 		},
-		
+
 		// writes a single character every time
 		writer : function(charString, input, appendIndex){
 			var chars = $(input.nextElementSibling).children().not('b'),  // select all characters including <br> (which is a new line)
 				newCharElm = document.createElement('span');
-				
+
 
 			if( input.maxLength > 0 && chars.length > input.maxLength )
 				return this;
-			
+
 			if( charString == ' ' ) // space
 				charString = '&nbsp;';
-			
+
 			if( charString ){
 				newCharElm.innerHTML = charString;
 				this.classToggler = this.classToggler == 'state2' ? 'state1' : 'state2';
@@ -99,9 +148,9 @@
 			}
 			else
 				newCharElm = document.createElement('br');
-			
+
 			if( chars.length ){
-				if( appendIndex == 0 ) 
+				if( appendIndex == 0 )
 					$(input.nextElementSibling).prepend(newCharElm);
 				else{
 					var appendPos = chars.eq(--appendIndex);
@@ -116,7 +165,7 @@
 				setTimeout(function(){
 					newCharElm.removeAttribute("class");
 				},20);
-			
+
 			return this;
 		},
 
@@ -124,18 +173,18 @@
 			var caret = $(textCont.parentNode).find('.caret');
 			$(textCont).html(caret);
 		},
-		
+
 		// insert bulk text (unlike the "writer" function which is for single character only)
 		fillText : function(text, input){
-			var charsCont = input.nextElementSibling, 
+			var charsCont = input.nextElementSibling,
 				newCharElm,
 				frag = document.createDocumentFragment();
 
 			fancyInput.clear( input.nextElementSibling );
-			
+
 			setTimeout( function(){
 				var length = text.length;
-					
+
 				for( var i=0; i < length; i++ ){
 					var newElm = 'span';
 					//fancyInput.writer( text[i], input, i);
@@ -148,21 +197,21 @@
 				charsCont.appendChild(frag);
 			},0);
 		},
-		
+
 		// Handles characters removal from the fake text input
 		removeChars : function(el, range){
-			var allChars = $(el).children().not('b').not('.deleted'), 
+			var allChars = $(el).children().not('b').not('.deleted'),
 				caret = $(el).find('b'),
 				charsToRemove;
-			
+
 			if( range[0] == range[1] )
 				range[0]--;
-				
+
 			charsToRemove = allChars.slice(range[0], range[1]);
-				
+
 			if( range[1] - range[0] == 1 ){
 				charsToRemove.css('position','absolute');
-				if(isWebkit)
+				if(isWebkit && charsToRemove[0])
 					charsToRemove[0].offsetLeft;
 				charsToRemove.addClass('deleted');
 				setTimeout(function(){
@@ -172,20 +221,20 @@
 			else
 				charsToRemove.remove();
 		},
-		
+
 		// recalculate textarea height or input width
 		inputResize : function(el){
 			if( el.tagName == 'TEXTAREA' ){
 				setTimeout(function(){
 					el.style.top = '-999px';
 					var newHeight = el.parentNode.scrollHeight;
-					
+
 					if( $(el).outerHeight() < el.parentNode.scrollHeight )
 						newHeight += 10;
-					
+
 					el.style.height = newHeight + 'px';
 					el.style.top = '0';
-					
+
 					// must re-adjust scrollTop after pasting long text
 					setTimeout(function(){
 						el.scrollTop = 0;
@@ -199,14 +248,14 @@
 				// if there is a scroll (or should be) adjust with some extra width
 				if( el.parentNode.scrollWidth > el.parentNode.clientWidth )
 					newWidth += 20;
-				
+
 				el.style.width = newWidth + 'px';
 				// re-adjustment
 				//el.scrollLeft = 9999;
 				//el.parentNode.scrollLeft += offset;
 			}
 		},
-		
+
 		keydown : function(e){
 			var charString = String.fromCharCode(e.charCode),
 				textCont = this.nextElementSibling,  // text container DIV
@@ -218,7 +267,7 @@
 				deleteKey = e.keyCode == 46 && !caretAtEndNoSelection;
 
 			fancyInput.setCaret(this);
-			
+
 			if( selectAll )
 				return true;
 
@@ -229,14 +278,14 @@
 				}, 50);
 				return true;
 			}
-			
+
 			// if BACKSPACE or DELETE
-			
+
 			if( e.keyCode == 8 || deleteKey ){
 				var selectionRange = [this.selectionStart, this.selectionEnd];
 				if( charDir.lastDir == 'rtl' ) // BIDI support
 					selectionRange = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
-					
+
 				// on pressing 'delete' while nothing is selected, and caret is not at the end
 				if( deleteKey && (this.selectionEnd == this.selectionStart && this.selectionEnd < this.value.length) ){
 					selectionRange[0] += 1;
@@ -244,23 +293,23 @@
 					fancyInput.removeChars(textCont, selectionRange);
 				}
 				else
-					setTimeout(function(){ 
+					setTimeout(function(){
 						if( e.metaKey || e.ctrlKey ) // when doing CTRL + BACKSPACE, needs to wait until the text was actually removed
 							selectionRange = [e.target.selectionStart, selectionRange[0]];
 						fancyInput.removeChars(textCont, selectionRange);
 					},0);
 			}
-			
+
 			// make sure to reset the container scrollLeft when caret is the the START or ar the END
 			if( this.selectionStart == 0 )
 				this.parentNode.scrollLeft = 0;
-				
+
 			return true;
 		},
-		
+
 		allEvents : function(e){
 			fancyInput.setCaret(this);
-			
+
 			if( e.type == 'paste' ){
 				setTimeout(function(){
 					fancyInput.fillText(e.target.value, e.target);
@@ -270,24 +319,24 @@
 			if( e.type == 'cut' ){
 				fancyInput.removeChars(this.nextElementSibling, [this.selectionStart, this.selectionEnd]);
 			}
-			
+
 			// I use 50 but most numbers under 65 will do i believe
 			if( !e.keyCode || e.keyCode < 50 )
 				fancyInput.maskPassword(this);
-			
+
 			// The caret height should be set. only once after the first character was entered.
 			if( !letterHeight ){
 				// in case text was pasted, wait for it to actually render
 				setTimeout(function(){ fancyInput.setCaretHeight(e.target) }, 150);
 			}
-			
+
 			if( this.selectionStart == this.value.length )
 				this.parentNode.scrollLeft = 999999; // this.parentNode.scrollLeftMax
-				
+
 			this.nextElementSibling.className = this.value ? '' : 'empty';
-				
+
 		},
-		
+
 		setCaret : function(input){
 			var caret = $(input.parentNode).find('.caret'),
 				allChars =  $(input.nextElementSibling).children().not('b'),
@@ -308,7 +357,7 @@
 			else
 				caret.insertBefore( insertPos );
 		},
-		
+
 		getCaretPosition : function(input){
 			var caretPos, direction = getSelectionDirection.direction || 'right';
 			if( input.selectionStart || input.selectionStart == '0' )
@@ -331,10 +380,10 @@
 				getSelectionDirection.lastOffset = e.clientX;
 			else if( e.type == 'mouseup' )
 				d = e.clientX < getSelectionDirection.lastOffset ? 'left' : 'right';
-				
+
 			getSelectionDirection.direction = d;
 		}
-	}, 
+	},
 
 	charDir = {
 		lastDir : null,
@@ -356,31 +405,32 @@
 		inputs.each(function(){
 			var className = 'fancyInput',
 				template = $('<div><b class="caret">&#8203;</b></div>');
-				
+
 			if( this.tagName == 'TEXTAREA' )
 				className += ' textarea';
 			// add needed DOM for the plugin to work
 			$(this.parentNode).append(template).addClass(className);
-	
+
 			// populate the fake field with any text that might have been on real input at the time of initialization
 			if( this.value )
 				fancyInput.fillText(this.value, this);
-			
+
 			if( this.placeholder ){
 				template.attr('data-placeholder', this.placeholder);
 				if( !this.value )
 					template.addClass('empty');
 			}
-				
+
 		});
-		
+
 		// bind all the events to simulate an input type text (yes, alot)
 		$(document)
-		    .off('.fi', selector)
+			.off('.fi', selector)
 			.on('input.fi', selector, fancyInput.input)
 			.on('keypress.fi', selector, fancyInput.keypress)
 			.on('keyup.fi select.fi mouseup.fi cut.fi paste.fi blur.fi', selector, fancyInput.allEvents)
 			.on('mousedown.fi mouseup.fi keydown.fi', selector, getSelectionDirection.set)
+			.on('change keydown keyup', selector, fancyInput.update)
 			.on('keydown.fi', selector , fancyInput.keydown);
 	}
 
