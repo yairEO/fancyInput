@@ -8,7 +8,7 @@
 ;(function($){
 	"use strict";
 	var isIe = !!window.ActiveXObject,
-		isWebkit = 'webkitRequestAnimationFrame' in window,
+		isWebkit = 'WebkitAppearance' in document.documentElement.style,
 		letterHeight;
 
 	$.fn.fancyInput = function(){
@@ -59,7 +59,6 @@
 		},
 		
 		input : function(){
-			fancyInput.textLength = this.value.length; // save a reference to later check if text was added in the "allEvents" callback
 			fancyInput.inputResize( this );
 		},
 		

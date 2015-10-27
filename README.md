@@ -2,7 +2,7 @@ Fancy Input
 =============
 Makes typing & deleting in input/Textarea fields exciting & fun with CSS3 effects.
 
-###[View Demo Page](http://dropthebit.com/demos/fancy_input/fancyInput.html)
+###[View Demo Page](http://yaireo.github.io/fancyInput)
 
 ## Basic use example:
 ```html
