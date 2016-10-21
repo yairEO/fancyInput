@@ -70,7 +70,7 @@
 				});
 		},
 		
-		// Clalculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
+		// Calculate letter height for the Carot, after first letter have been typed, or text pasted (only once)
 		setCaretHeight : function(input){
 			var lettersWrap = $(input.nextElementSibling);
 			if( !lettersWrap.find('span').length )
