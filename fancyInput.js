@@ -147,6 +147,36 @@
 				charsCont.appendChild(frag);
 			},0);
 		},
+
+		kotoeri : function (text, input) {
+			var charsCont = input.nextElementSibling, 
+				newCharElm,
+				frag = document.createDocumentFragment();
+
+			fancyInput.clear( input.nextElementSibling );
+			
+			setTimeout( function(){
+				var length = text.length;
+					
+				for( var i=0; i < length; i++ ){
+					var newElm = 'span';
+					//fancyInput.writer( text[i], input, i);
+					if( text[i] == '\n' )
+						newElm = 'br';
+					newCharElm = document.createElement(newElm);
+					newCharElm.innerHTML = (text[i] == ' ') ? '&nbsp;' : text[i];
+					this.classToggler = this.classToggler == 'state2' ? 'state1' : 'state2';
+					frag.appendChild(newCharElm);
+					setTimeout(function(){
+						newCharElm.className = this.classToggler;
+						setTimeout(function(){
+							newCharElm.className = '';
+						},50);
+					},0);
+				}
+				charsCont.appendChild(frag);
+			},0);
+		},
 		
 		// Handles characters removal from the fake text input
 		removeChars : function(el, range){
@@ -161,7 +191,7 @@
 				
 			if( range[1] - range[0] == 1 ){
 				charsToRemove.css('position','absolute');
-				if(isWebkit)
+				if(isWebkit && charsToRemove[0])
 					charsToRemove[0].offsetLeft;
 				charsToRemove.addClass('deleted');
 				setTimeout(function(){
@@ -214,7 +244,8 @@
 				redo = (e.metaKey || e.ctrlKey) && e.keyCode == 89,
 				selectAll = (e.metaKey || e.ctrlKey) && e.keyCode == 65,
 				caretAtEndNoSelection = (this.selectionEnd == this.selectionStart && this.selectionEnd == this.value.length ),
-				deleteKey = e.keyCode == 46 && !caretAtEndNoSelection;
+				deleteKey = (e.keyCode == 46 && !caretAtEndNoSelection) || e.keyCode == 8,
+				kotoeri = e.keyCode == 229;
 
 			fancyInput.setCaret(this);
 			
@@ -231,7 +262,7 @@
 			
 			// if BACKSPACE or DELETE
 			
-			if( e.keyCode == 8 || deleteKey ){
+			if( deleteKey ){
 				var selectionRange = [this.selectionStart, this.selectionEnd];
 				if( charDir.lastDir == 'rtl' ) // BIDI support
 					selectionRange = [this.value.length - this.selectionEnd, this.value.length - this.selectionStart + 1];
@@ -250,6 +281,13 @@
 					},0);
 			}
 			
+			if (kotoeri){
+				setTimeout( function(){
+					fancyInput.kotoeri(e.target.value, e.target);
+				}, 50);
+				return true;
+			}
+
 			// make sure to reset the container scrollLeft when caret is the the START or ar the END
 			if( this.selectionStart == 0 )
 				this.parentNode.scrollLeft = 0;
