@@ -4,7 +4,7 @@ Makes typing & deleting in input/Textarea fields exciting & fun with CSS3 effect
 
 ![alt tag](https://raw.githubusercontent.com/yairEO/fancyInput/master/preview.gif)
 
-###[View Demo Page](http://yaireo.github.io/fancyInput)
+### [View Demo Page](http://yaireo.github.io/fancyInput)
 
 ## Basic use example:
 ```html
