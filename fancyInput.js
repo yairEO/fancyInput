@@ -88,6 +88,10 @@
 			if( input.maxLength > 0 && chars.length > input.maxLength )
 				return this;
 			
+			// If the input is a password, charString is an astrisk
+			if( jQuery(input).attr('type') == 'password' ){
+				charString = "*";
+			}
 			if( charString == ' ' ) // space
 				charString = '&nbsp;';
 			
