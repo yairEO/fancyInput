@@ -1,5 +1,5 @@
 /*!
-	fancyInput v1.3.2
+	fancyInput v1.3.3
 	(c) 2013 Yair Even Or <http://dropthebit.com>
 
 	MIT-style license.
