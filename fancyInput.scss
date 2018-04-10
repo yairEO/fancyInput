@@ -38,7 +38,7 @@ $use-default-placeholder: 'no';
 	}
 	input:focus ~ div.empty:before{ opacity:.1; }
 	
-	&.textarea > div{ width:99.9%%; }
+	&.textarea > div{ width:99.9%; }
 
 	*:focus ~ .caret,
 	*:focus ~ div .caret{ opacity:.8; box-shadow:0 0 8px #FFF; -webkit-animation:0.4s 40ms caret infinite; animation:0.4s 40ms caret infinite; }
