@@ -73,7 +73,7 @@
   .fancyInput input:focus ~ div.empty:before {
     opacity: .1; }
   .fancyInput.textarea > div {
-    width: 99.9%%; }
+    width: 99.9%; }
   .fancyInput *:focus ~ .caret,
   .fancyInput *:focus ~ div .caret {
     opacity: .8;
